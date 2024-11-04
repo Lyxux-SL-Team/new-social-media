@@ -1,6 +1,7 @@
 package com.example.vidusha_chat_app.adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 
 import com.example.vidusha_chat_app.R;
+import com.example.vidusha_chat_app.activities.ChatActivity;
 import com.example.vidusha_chat_app.models.User;
 
 import java.util.List;
@@ -42,6 +44,12 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
 //                .load(user.getProfilePicUrl())
 //                .placeholder(R.drawable.img)
 //                .into(holder.profileIcon);
+
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(context, ChatActivity.class);
+            intent.putExtra("userId", user.getUserId());
+            context.startActivity(intent);
+        });
     }
 
     @Override
@@ -58,5 +66,8 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
             profileIcon = itemView.findViewById(R.id.profile_icon);
             userName = itemView.findViewById(R.id.user_name);
         }
+
     }
+
+
 }
