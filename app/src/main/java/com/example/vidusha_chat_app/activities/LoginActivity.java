@@ -1,6 +1,7 @@
 package com.example.vidusha_chat_app.activities;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -44,6 +45,14 @@ public class LoginActivity extends AppCompatActivity {
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
                         FirebaseUser user = mAuth.getCurrentUser();
+                        String userId = user.getUid();
+                        // Save user ID in SharedPreferences
+                        SharedPreferences sharedPreferences = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putString("userId", userId);
+                        editor.apply();
+
+                        // Navigate to ChatListActivity
                         startActivity(new Intent(LoginActivity.this, ChatListActivity.class));
                         finish();
                     } else {

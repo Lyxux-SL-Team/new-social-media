@@ -1,4 +1,4 @@
-package com.example.vidusha_chat_app.activities;
+package com.example.vidusha_chat_app.adapters;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,8 +17,14 @@ import java.util.List;
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageViewHolder> {
     private List<Message> messages = new ArrayList<>();
 
+
+    // Optional constructor
+    public MessageAdapter(List<Message> messages) {
+        this.messages = messages != null ? messages : new ArrayList<>();
+    }
+
     public void setMessages(List<Message> messages) {
-        this.messages = messages;
+        this.messages = messages != null ? messages : new ArrayList<>();
         notifyDataSetChanged();
     }
 
@@ -37,7 +43,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     @Override
     public int getItemCount() {
-        return messages.size();
+        return messages.size(); // Will return 0 if the list is empty
     }
 
     static class MessageViewHolder extends RecyclerView.ViewHolder {
