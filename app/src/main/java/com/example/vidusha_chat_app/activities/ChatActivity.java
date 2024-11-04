@@ -56,7 +56,7 @@ public class ChatActivity extends AppCompatActivity {
         }
 
         messages = new ArrayList<>();
-        messageAdapter = new MessageAdapter(messages);
+        messageAdapter = new MessageAdapter(messages, chatId);
         recyclerView = findViewById(R.id.posts_recycler_view);
         ImageButton btnPickImage = findViewById(R.id.imageButton);
         EditText editTextText = findViewById(R.id.editTextText);
@@ -111,36 +111,75 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void listenForMessages() {
-        Query query = firestore.collection("messages")
+        messages.clear(); // Clear existing messages to avoid duplication
+
+        // Query for messages where chatId matches userId
+        Query queryByChatId = firestore.collection("messages")
+                .whereEqualTo("chatId", userId)
+                .orderBy("timestamp");
+
+        // Query for messages where senderId matches userId
+        Query queryBySenderId = firestore.collection("messages")
                 .whereEqualTo("senderId", userId)
                 .orderBy("timestamp");
-        Log.d("ChatActivity", "Query created: " + query);
 
-        listenerRegistration = query.addSnapshotListener((snapshots, e) -> {
+        // Listener for chatId query
+        ListenerRegistration chatIdListener = queryByChatId.addSnapshotListener((snapshots, e) -> {
             if (e != null) {
-                Log.e("ChatActivity", "Error listening for messages", e);
+                Log.e("ChatActivity", "Error fetching messages by chatId", e);
                 return;
             }
 
-            if (snapshots != null && !snapshots.isEmpty()) {
-                List<Message> newMessages = new ArrayList<>();
+            if (snapshots != null) {
                 for (DocumentChange dc : snapshots.getDocumentChanges()) {
                     if (dc.getType() == DocumentChange.Type.ADDED) {
                         Message message = dc.getDocument().toObject(Message.class);
-                        newMessages.add(message);
-                        Log.d("ChatActivity", "New message received: " + message.getContent());
+                        if (!messages.contains(message)) {
+                            messages.add(message);
+                        }
                     }
                 }
-
-                // Clear existing messages to avoid duplication
-                messages.clear();
-                messages.addAll(newMessages);
-                messageAdapter.notifyDataSetChanged();
-                recyclerView.scrollToPosition(messages.size() - 1); // Scroll to the latest message
-            } else {
-                Log.d("ChatActivity", "No messages found in the chat.");
+                updateRecyclerView();
             }
         });
+
+        // Listener for senderId query
+        ListenerRegistration senderIdListener = queryBySenderId.addSnapshotListener((snapshots, e) -> {
+            if (e != null) {
+                Log.e("ChatActivity", "Error fetching messages by senderId", e);
+                return;
+            }
+
+            if (snapshots != null) {
+                for (DocumentChange dc : snapshots.getDocumentChanges()) {
+                    if (dc.getType() == DocumentChange.Type.ADDED) {
+                        Message message = dc.getDocument().toObject(Message.class);
+                        if (!messages.contains(message)) {
+                            messages.add(message);
+                        }
+                    }
+                }
+                updateRecyclerView();
+            }
+        });
+
+        // Store these listener registrations to remove them later if needed
+        listenerRegistration = chatIdListener;
+        // Optionally store senderIdListener if you need to remove it later as well
+    }
+
+    // Method to update the RecyclerView and scroll to the latest message
+    private void updateRecyclerView() {
+        messageAdapter.notifyDataSetChanged();
+        recyclerView.scrollToPosition(messages.size() - 1);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (listenerRegistration != null) {
+            listenerRegistration.remove(); // Remove listener on destroy
+        }
     }
 
 }

@@ -16,11 +16,12 @@ import java.util.List;
 
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageViewHolder> {
     private List<Message> messages = new ArrayList<>();
-
+    private  String currentUserId ;
 
     // Optional constructor
-    public MessageAdapter(List<Message> messages) {
+    public MessageAdapter(List<Message> messages, String currentUserId) {
         this.messages = messages != null ? messages : new ArrayList<>();
+        this.currentUserId = currentUserId;
     }
 
     public void setMessages(List<Message> messages) {
@@ -39,11 +40,27 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     public void onBindViewHolder(@NonNull MessageViewHolder holder, int position) {
         Message message = messages.get(position);
         holder.bind(message);
+
+        if (message.getChatId().equals(currentUserId)) {
+
+            ViewGroup.LayoutParams layoutParams = holder.itemView.getLayoutParams();
+            layoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT;
+            holder.itemView.setLayoutParams(layoutParams);
+            holder.messageText.setBackgroundColor(holder.itemView.getContext().getResources().getColor(R.color.blue));
+            holder.messageText.setGravity(View.TEXT_ALIGNMENT_TEXT_END);
+        } else {
+
+            ViewGroup.LayoutParams layoutParams = holder.itemView.getLayoutParams();
+            layoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT;
+            holder.itemView.setLayoutParams(layoutParams);
+            holder.messageText.setBackgroundColor(holder.itemView.getContext().getResources().getColor(R.color.red));
+            holder.messageText.setGravity(View.TEXT_ALIGNMENT_TEXT_START);
+        }
     }
 
     @Override
     public int getItemCount() {
-        return messages.size(); // Will return 0 if the list is empty
+        return messages.size();
     }
 
     static class MessageViewHolder extends RecyclerView.ViewHolder {
