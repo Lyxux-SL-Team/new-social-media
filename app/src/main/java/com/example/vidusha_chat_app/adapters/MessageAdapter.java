@@ -41,6 +41,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         Message message = messages.get(position);
         holder.bind(message);
 
+
         if (message.getChatId().equals(currentUserId)) {
 
             ViewGroup.LayoutParams layoutParams = holder.itemView.getLayoutParams();

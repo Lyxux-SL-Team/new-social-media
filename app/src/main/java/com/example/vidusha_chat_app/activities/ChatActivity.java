@@ -1,10 +1,12 @@
 package com.example.vidusha_chat_app.activities;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -21,6 +23,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.vidusha_chat_app.adapters.MessageAdapter;
 import com.example.vidusha_chat_app.database.MessageDatabaseHelper;
 import com.example.vidusha_chat_app.models.Message;
+import com.google.firebase.database.annotations.Nullable;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -28,8 +31,11 @@ import com.example.vidusha_chat_app.R;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -111,7 +117,57 @@ public class ChatActivity extends AppCompatActivity {
                 }
             }
         });
+
+
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            Uri imageUri = data.getData();
+            uploadImageToFirebase(imageUri);
+        }
+    }
+
+
+
+    private void uploadImageToFirebase(Uri imageUri) {
+        if (imageUri != null) {
+            String fileName = "images/" + System.currentTimeMillis() + ".jpg";
+            FirebaseStorage storage = FirebaseStorage.getInstance();
+            StorageReference storageRef = storage.getReference().child(fileName);
+
+            try {
+                // Open an InputStream from the Uri
+                ContentResolver contentResolver = getContentResolver();
+                InputStream inputStream = contentResolver.openInputStream(imageUri);
+
+                if (inputStream != null) {
+                    // Upload using putStream instead of putFile
+                    storageRef.putStream(inputStream)
+                            .addOnSuccessListener(taskSnapshot -> storageRef.getDownloadUrl()
+                                    .addOnSuccessListener(uri -> {
+                                        String imageUrl = uri.toString();
+                                        Log.d("ChatActivity", "Image uploaded successfully: " + imageUrl);
+                                        sendMessage(imageUrl);
+                                    }))
+                            .addOnFailureListener(e -> {
+                                Log.d("ChatActivity", "Error with upload img: " + e.getMessage());
+                                Toast.makeText(ChatActivity.this, "Failed to upload image: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            });
+                }
+            } catch (Exception e) {
+                Log.e("ChatActivity", "Error opening InputStream: " + e.getMessage());
+                Toast.makeText(this, "Error uploading image", Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Log.e("ChatActivity", "Image Uri is null");
+            Toast.makeText(this, "Image Uri is null", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
 
     private void sendMessage(String content) {
         Message message = new Message();
