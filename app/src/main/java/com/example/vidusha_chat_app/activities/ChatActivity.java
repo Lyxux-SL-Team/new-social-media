@@ -1,6 +1,9 @@
 package com.example.vidusha_chat_app.activities;
 
+import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -15,6 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.vidusha_chat_app.adapters.MessageAdapter;
+import com.example.vidusha_chat_app.database.MessageDatabaseHelper;
 import com.example.vidusha_chat_app.models.Message;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -26,6 +30,7 @@ import com.google.firebase.firestore.DocumentChange;
 
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ChatActivity extends AppCompatActivity {
@@ -37,6 +42,8 @@ public class ChatActivity extends AppCompatActivity {
 
     private List<Message> messages;
     private RecyclerView recyclerView;
+
+    private MessageDatabaseHelper dbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,20 +105,34 @@ public class ChatActivity extends AppCompatActivity {
         message.setTimestamp(System.currentTimeMillis());
         message.setChatId(chatId);
 
-        // Save the message to Firestore
-        CollectionReference messagesRef = firestore.collection("messages");
-        messagesRef.add(message)
-                .addOnSuccessListener(documentReference -> {
-                    // Optionally handle success
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(ChatActivity.this, "Error sending message", Toast.LENGTH_SHORT).show();
-                });
-        listenForMessages();
+        if(isConnected()){
+            // Save the message to Firestore
+            CollectionReference messagesRef = firestore.collection("messages");
+            messagesRef.add(message)
+                    .addOnSuccessListener(documentReference -> {
+                        // Optionally handle success
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(ChatActivity.this, "Error sending message", Toast.LENGTH_SHORT).show();
+                    });
+            listenForMessages();
+        } else {
+            MessageDatabaseHelper dbHelper = new MessageDatabaseHelper(this);
+            dbHelper.saveMessageOffline(message);
+            Toast.makeText(ChatActivity.this, "Message saved offline", Toast.LENGTH_SHORT).show();
+            dbHelper.getOfflineMessage();
+
+        }
+
     }
 
     private void listenForMessages() {
         messages.clear(); // Clear existing messages to avoid duplication
+
+        // Fetch offline messages first and add them to the list
+        MessageDatabaseHelper dbHelper = new MessageDatabaseHelper(this);
+        List<Message> offlineMessages = dbHelper.getOfflineMessage();
+        messages.addAll(offlineMessages);
 
         // Query for messages where chatId matches userId
         Query queryByChatId = firestore.collection("messages")
@@ -139,7 +160,7 @@ public class ChatActivity extends AppCompatActivity {
                         }
                     }
                 }
-                updateRecyclerView();
+                updateRecyclerView(); // Update the RecyclerView after adding Firestore messages
             }
         });
 
@@ -159,17 +180,23 @@ public class ChatActivity extends AppCompatActivity {
                         }
                     }
                 }
-                updateRecyclerView();
+                updateRecyclerView(); // Update the RecyclerView after adding Firestore messages
             }
         });
 
         // Store these listener registrations to remove them later if needed
         listenerRegistration = chatIdListener;
         // Optionally store senderIdListener if you need to remove it later as well
+
+        // Update the RecyclerView with offline messages initially
+        updateRecyclerView();
     }
 
     // Method to update the RecyclerView and scroll to the latest message
     private void updateRecyclerView() {
+        // Sort messages by timestamp to ensure correct order
+        Collections.sort(messages, (m1, m2) -> Long.compare(m1.getTimestamp(), m2.getTimestamp()));
+
         messageAdapter.notifyDataSetChanged();
         recyclerView.scrollToPosition(messages.size() - 1);
     }
@@ -180,6 +207,12 @@ public class ChatActivity extends AppCompatActivity {
         if (listenerRegistration != null) {
             listenerRegistration.remove(); // Remove listener on destroy
         }
+    }
+
+    public boolean isConnected() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        return activeNetwork != null && activeNetwork.isConnected();
     }
 
 }

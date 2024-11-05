@@ -42,7 +42,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-<!--        <activity-->
+        <receiver android:name=".utils.NetworkChangeReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
+            </intent-filter>
+        </receiver>
+
+        <!--        <activity-->
 <!--            android:name=".MainActivity"-->
 <!--            android:exported="true">-->
 <!--            <intent-filter>-->
