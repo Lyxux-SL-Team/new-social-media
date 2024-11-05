@@ -1,6 +1,7 @@
 package com.example.vidusha_chat_app.activities;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -34,6 +35,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class ChatActivity extends AppCompatActivity {
+    private static final int PICK_IMAGE_REQUEST = 1;
     private FirebaseFirestore firestore;
     private String userId;
     private String chatId;
@@ -88,6 +90,16 @@ public class ChatActivity extends AppCompatActivity {
                 }
             }
 
+        });
+
+        btnPickImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                intent.setType("image/*");
+                intent.setAction(intent.ACTION_GET_CONTENT);
+                startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
+            }
         });
         editTextText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
