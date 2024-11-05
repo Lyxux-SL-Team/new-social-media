@@ -62,6 +62,9 @@ public class ChatActivity extends AppCompatActivity {
             Log.d("ChatActivity", "User ID not found.");
         }
 
+        Log.d("ChatActivity", "Logged-in chat ID: " + chatId);
+        Log.d("ChatActivity", "Logged-in User ID: " + userId);
+
         messages = new ArrayList<>();
         messageAdapter = new MessageAdapter(messages, chatId);
         recyclerView = findViewById(R.id.posts_recycler_view);
@@ -115,12 +118,13 @@ public class ChatActivity extends AppCompatActivity {
                     .addOnFailureListener(e -> {
                         Toast.makeText(ChatActivity.this, "Error sending message", Toast.LENGTH_SHORT).show();
                     });
-            listenForMessages();
+//            listenForMessages();
         } else {
             MessageDatabaseHelper dbHelper = new MessageDatabaseHelper(this);
             dbHelper.saveMessageOffline(message);
             Toast.makeText(ChatActivity.this, "Message saved offline", Toast.LENGTH_SHORT).show();
             dbHelper.getOfflineMessage();
+            listenForMessages();
 
         }
 
@@ -133,6 +137,7 @@ public class ChatActivity extends AppCompatActivity {
         MessageDatabaseHelper dbHelper = new MessageDatabaseHelper(this);
         List<Message> offlineMessages = dbHelper.getOfflineMessage();
         messages.addAll(offlineMessages);
+//        updateRecyclerView();
 
         // Query for messages where chatId matches userId
         Query queryByChatId = firestore.collection("messages")
@@ -186,7 +191,7 @@ public class ChatActivity extends AppCompatActivity {
 
         // Store these listener registrations to remove them later if needed
         listenerRegistration = chatIdListener;
-        // Optionally store senderIdListener if you need to remove it later as well
+
 
         // Update the RecyclerView with offline messages initially
         updateRecyclerView();
