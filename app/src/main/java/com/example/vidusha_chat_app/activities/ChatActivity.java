@@ -38,7 +38,9 @@ import com.google.firebase.storage.StorageReference;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ChatActivity extends AppCompatActivity {
     private static final int PICK_IMAGE_REQUEST = 1;
@@ -53,7 +55,7 @@ public class ChatActivity extends AppCompatActivity {
 
     private MessageDatabaseHelper dbHelper;
 
-    private Button deleteButton;
+    private Button deleteButton, editButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,6 +84,7 @@ public class ChatActivity extends AppCompatActivity {
         EditText editTextText = findViewById(R.id.editTextText);
         Button buttonPost = findViewById(R.id.button3);
         deleteButton = findViewById(R.id.delete_button);
+        editButton = findViewById(R.id.edit_button);
 
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -94,12 +97,23 @@ public class ChatActivity extends AppCompatActivity {
             List<Message> selectedMessages = messageAdapter.getSelectedMessages();
             deleteMessages(selectedMessages);
         });
+
+        editButton.setOnClickListener(v -> {
+            List<Message> selectedMessages = messageAdapter.getSelectedMessages();
+            convertToMessageToEdit(selectedMessages);
+        });
         buttonPost.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String messageContent = editTextText.getText().toString().trim();
                 if (!messageContent.isEmpty()) {
-                    sendMessage(messageContent);
+                    if(messageAdapter.getSelectedMessages().isEmpty()){
+                        sendMessage(messageContent);
+                    }else {
+                        List<Message> selectedMessages = messageAdapter.getSelectedMessages();
+                        updateMessages(selectedMessages);
+                    }
+
                     editTextText.setText(""); // Clear input field
                 } else {
                     Toast.makeText(ChatActivity.this, "Message cannot be empty", Toast.LENGTH_SHORT).show();
@@ -189,10 +203,11 @@ public class ChatActivity extends AppCompatActivity {
 
         if(isConnected()){
             // Save the message to Firestore
-            CollectionReference messagesRef = firestore.collection("messages");
-            messagesRef.add(message)
+
+
+            firestore.collection("messages").document(message.getMessageId()).set(message)
                     .addOnSuccessListener(documentReference -> {
-                        // Optionally handle success
+
                     })
                     .addOnFailureListener(e -> {
                         Toast.makeText(ChatActivity.this, "Error sending message", Toast.LENGTH_SHORT).show();
@@ -308,6 +323,15 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
+    public void updateEditButtonVisibility() {
+        List<Message> selectedMessages = messageAdapter.getSelectedMessages();
+        if (selectedMessages.size() > 0) {
+            editButton.setVisibility(View.VISIBLE);
+        } else {
+            editButton.setVisibility(View.GONE);
+        }
+    }
+
     private void deleteMessages(List<Message> selectedMessages) {
         for (Message message : selectedMessages) {
             String messageId = message.getMessageId();
@@ -332,6 +356,66 @@ public class ChatActivity extends AppCompatActivity {
             }
         }
     }
+
+    private void convertToMessageToEdit(List<Message> selectedMessages){
+        for (Message message: selectedMessages) {
+            String content = message.getContent();
+            EditText editTextText = findViewById(R.id.editTextText);
+
+            editTextText.setText(content);
+        }
+    }
+    private void updateMessages(List<Message> selectedMessages) {
+        List<Message> updatedMessages = new ArrayList<>();
+        EditText editTextText = findViewById(R.id.editTextText);
+        String updatedText = editTextText.getText().toString().trim();
+
+        Log.d("ChatActivity", "Updated message: " + updatedText);
+
+        for (Message message : selectedMessages) {
+            String messageId = message.getMessageId();
+            if (messageId != null && !messageId.isEmpty()) {
+                firestore.collection("messages")
+                        .document(messageId)
+                        .get()  // Check if document exists
+                        .addOnSuccessListener(documentSnapshot -> {
+                            if (documentSnapshot.exists()) {
+                                Map<String, Object> updates = new HashMap<>();
+                                updates.put("content", updatedText);
+
+                                firestore.collection("messages")
+                                        .document(messageId)
+                                        .update(updates)
+                                        .addOnSuccessListener(aVoid -> {
+                                            message.setContent(updatedText);
+                                            updatedMessages.add(message);
+
+                                            if (updatedMessages.size() == selectedMessages.size()) {
+                                                messageAdapter.updateMessage(updatedMessages);
+                                                Log.d("ChatActivity", "Messages updated successfully");
+                                                Toast.makeText(this, "Messages updated", Toast.LENGTH_SHORT).show();
+                                            }
+                                        })
+                                        .addOnFailureListener(e -> {
+                                            Log.e("ChatActivity", "Error updating message: " + e.getMessage());
+                                            Toast.makeText(this, "Error updating messages", Toast.LENGTH_SHORT).show();
+                                        });
+                            } else {
+                                Log.e("ChatActivity", "Document with ID " + messageId + " does not exist.");
+                                Toast.makeText(this, "Message not found in Firestore", Toast.LENGTH_SHORT).show();
+                            }
+                        })
+                        .addOnFailureListener(e -> {
+                            Log.e("ChatActivity", "Error checking document existence: " + e.getMessage());
+                            Toast.makeText(this, "Error finding message in Firestore", Toast.LENGTH_SHORT).show();
+                        });
+            } else {
+                Log.e("ChatActivity", "Invalid message ID");
+                Toast.makeText(this, "Invalid message ID", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
 
 
 

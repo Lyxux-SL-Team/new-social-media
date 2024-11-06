@@ -77,6 +77,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             }
 
             chatActivity.updateDeleteButtonVisibility();
+            chatActivity.updateEditButtonVisibility();
         });
     }
 
@@ -91,6 +92,24 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     public void removeMessages(List<Message> messagesToDelete) {
         messages.removeAll(messagesToDelete);
+        notifyDataSetChanged();
+    }
+
+    public void updateMessage(List<Message> messagesToUpdate) {
+        for (Message updatedMessage : messagesToUpdate) {
+            for (int i = 0; i < messages.size(); i++) {
+                Message currentMessage = messages.get(i);
+
+                // Check if the message ID matches
+                if (currentMessage.getMessageId().equals(updatedMessage.getMessageId())) {
+                    // Update the message content or any other fields
+                    messages.set(i, updatedMessage); // Replace old message with updated one
+                    break; // Move to the next updated message
+                }
+            }
+        }
+
+        // Notify the adapter that the data has changed
         notifyDataSetChanged();
     }
 
