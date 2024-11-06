@@ -310,19 +310,29 @@ public class ChatActivity extends AppCompatActivity {
 
     private void deleteMessages(List<Message> selectedMessages) {
         for (Message message : selectedMessages) {
-            // Remove message from Firestore
-            firestore.collection("messages")
-                    .document(message.getMessageId())
-                    .delete()
-                    .addOnSuccessListener(aVoid -> {
-                        messageAdapter.removeMessages(selectedMessages);
-                        Toast.makeText(this, "Messages deleted", Toast.LENGTH_SHORT).show();
-                    })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(this, "Error deleting messages", Toast.LENGTH_SHORT).show();
-                    });
+            String messageId = message.getMessageId();
+            Log.d("chatActivity", "Attempting to delete message with ID: " + messageId);
+
+            // Check if messageId is valid
+            if (messageId != null && !messageId.isEmpty()) {
+                firestore.collection("messages")
+                        .document(messageId)
+                        .delete()
+                        .addOnSuccessListener(aVoid -> {
+                            messageAdapter.removeMessages(selectedMessages);
+                            Toast.makeText(this, "Messages deleted", Toast.LENGTH_SHORT).show();
+                        })
+                        .addOnFailureListener(e -> {
+                            Log.e("chatActivity", "Error deleting message: " + e.getMessage());
+                            Toast.makeText(this, "Error deleting messages", Toast.LENGTH_SHORT).show();
+                        });
+            } else {
+                Log.e("chatActivity", "Message ID is null or empty");
+                Toast.makeText(this, "Invalid message ID", Toast.LENGTH_SHORT).show();
+            }
         }
     }
+
 
 
 }
