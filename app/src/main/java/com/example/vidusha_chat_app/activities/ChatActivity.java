@@ -182,6 +182,7 @@ public class ChatActivity extends AppCompatActivity {
     private void sendMessage(String content) {
         Message message = new Message();
         message.setSenderId(userId);
+        message.setMessageId(userId+chatId);
         message.setContent(content);
         message.setTimestamp(System.currentTimeMillis());
         message.setChatId(chatId);
