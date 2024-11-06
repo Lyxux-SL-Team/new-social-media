@@ -8,6 +8,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -16,6 +17,7 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -44,6 +46,7 @@ import java.util.Map;
 
 public class ChatActivity extends AppCompatActivity {
     private static final int PICK_IMAGE_REQUEST = 1;
+    private static final int CAMERA_REQUEST = 123;
     private FirebaseFirestore firestore;
     private String userId;
     private String chatId;
@@ -125,10 +128,7 @@ public class ChatActivity extends AppCompatActivity {
         btnPickImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent();
-                intent.setType("image/*");
-                intent.setAction(intent.ACTION_GET_CONTENT);
-                startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
+                showImagePickerDialog();
             }
         });
         editTextText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
@@ -150,7 +150,8 @@ public class ChatActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
             Uri imageUri = data.getData();
-            uploadImageToFirebase(imageUri);
+//            uploadImageToFirebase(imageUri);
+            Log.d("ChatActivity","uploaded img" + imageUri);
         }
     }
 
@@ -416,7 +417,30 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
+    private void showImagePickerDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Select sourece");
+        builder.setItems(new CharSequence[]{"Take a photo", "Choose from gallery"},((dialog, which) -> {
+            if(which == 0) {
+                openCamera();
+            }else {
+                openGallery();
+            }
+        }));
+        builder.show();
+    }
 
+    private void openCamera(){
+        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if(cameraIntent.resolveActivity(getPackageManager()) != null){
+            startActivityForResult(cameraIntent, CAMERA_REQUEST);
+        }
+    }
 
-
+    private void openGallery() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Select Picture"),PICK_IMAGE_REQUEST);
+    }
 }
