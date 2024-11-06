@@ -53,6 +53,8 @@ public class ChatActivity extends AppCompatActivity {
 
     private MessageDatabaseHelper dbHelper;
 
+    private Button deleteButton;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,16 +76,24 @@ public class ChatActivity extends AppCompatActivity {
         Log.d("ChatActivity", "Logged-in User ID: " + userId);
 
         messages = new ArrayList<>();
-        messageAdapter = new MessageAdapter(messages, chatId);
+        messageAdapter = new MessageAdapter(messages, chatId, this);
         recyclerView = findViewById(R.id.posts_recycler_view);
         ImageButton btnPickImage = findViewById(R.id.imageButton);
         EditText editTextText = findViewById(R.id.editTextText);
         Button buttonPost = findViewById(R.id.button3);
+        deleteButton = findViewById(R.id.delete_button);
 
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(messageAdapter);
         listenForMessages();
+
+
+        deleteButton.setOnClickListener(v -> {
+            // Delete selected messages
+            List<Message> selectedMessages = messageAdapter.getSelectedMessages();
+            deleteMessages(selectedMessages);
+        });
         buttonPost.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -287,5 +297,31 @@ public class ChatActivity extends AppCompatActivity {
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         return activeNetwork != null && activeNetwork.isConnected();
     }
+
+    public void updateDeleteButtonVisibility() {
+        List<Message> selectedMessages = messageAdapter.getSelectedMessages();
+        if (selectedMessages.size() > 0) {
+            deleteButton.setVisibility(View.VISIBLE);
+        } else {
+            deleteButton.setVisibility(View.GONE);
+        }
+    }
+
+    private void deleteMessages(List<Message> selectedMessages) {
+        for (Message message : selectedMessages) {
+            // Remove message from Firestore
+            firestore.collection("messages")
+                    .document(message.getMessageId())
+                    .delete()
+                    .addOnSuccessListener(aVoid -> {
+                        messageAdapter.removeMessages(selectedMessages);
+                        Toast.makeText(this, "Messages deleted", Toast.LENGTH_SHORT).show();
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(this, "Error deleting messages", Toast.LENGTH_SHORT).show();
+                    });
+        }
+    }
+
 
 }
