@@ -16,6 +16,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.SearchView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -55,11 +56,14 @@ public class ChatActivity extends AppCompatActivity {
     private ListenerRegistration listenerRegistration;
 
     private List<Message> messages;
+    private List<Message> filteredMessges= new ArrayList<>();;
     private RecyclerView recyclerView;
 
     private MessageDatabaseHelper dbHelper;
 
     private Button deleteButton, editButton;
+
+    private SearchView searchTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,6 +93,7 @@ public class ChatActivity extends AppCompatActivity {
         Button buttonPost = findViewById(R.id.button3);
         deleteButton = findViewById(R.id.delete_button);
         editButton = findViewById(R.id.edit_button);
+        searchTextView = findViewById(R.id.search_view);
 
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -140,6 +145,20 @@ public class ChatActivity extends AppCompatActivity {
                 }else{
                     editTextText.setHint("Text here..");
                 }
+            }
+        });
+
+        searchTextView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                filterMessages(query);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                filterMessages(newText);
+                return false;
             }
         });
 
@@ -198,7 +217,7 @@ public class ChatActivity extends AppCompatActivity {
     private void sendMessage(String content) {
         Message message = new Message();
         message.setSenderId(userId);
-        message.setMessageId(userId+chatId);
+        message.setMessageId(userId+chatId+"_"+System.currentTimeMillis());
         message.setContent(content);
         message.setTimestamp(System.currentTimeMillis());
         message.setChatId(chatId);
@@ -295,11 +314,13 @@ public class ChatActivity extends AppCompatActivity {
 
     // Method to update the RecyclerView and scroll to the latest message
     private void updateRecyclerView() {
-        // Sort messages by timestamp to ensure correct order
-        Collections.sort(messages, (m1, m2) -> Long.compare(m1.getTimestamp(), m2.getTimestamp()));
 
-        messageAdapter.notifyDataSetChanged();
-        recyclerView.scrollToPosition(messages.size() - 1);
+            // Sort messages by timestamp to ensure correct order
+            Collections.sort(messages, (m1, m2) -> Long.compare(m1.getTimestamp(), m2.getTimestamp()));
+
+            messageAdapter.notifyDataSetChanged();
+            recyclerView.scrollToPosition(messages.size() - 1);
+
     }
 
     @Override
@@ -446,5 +467,25 @@ public class ChatActivity extends AppCompatActivity {
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(Intent.createChooser(intent, "Select Picture"),PICK_IMAGE_REQUEST);
+    }
+
+    private void filterMessages(String query) {
+        filteredMessges.clear();
+        Log.d("ChatActivity", "typed text" + query);
+
+            for (Message message : messages) {
+                String messageText = message.getContent();
+
+
+                if (messageText != null && messageText.toLowerCase().contains(query.toLowerCase())) {
+                    if(messageText.equals(query)){
+                        filteredMessges.add(message);
+                        Log.d("ChatActivity", "filtered messages " + message);
+                        updateRecyclerView();
+                    }
+                }
+            }
+
+
     }
 }
