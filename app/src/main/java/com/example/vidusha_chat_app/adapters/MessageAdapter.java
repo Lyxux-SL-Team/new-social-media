@@ -1,5 +1,6 @@
 package com.example.vidusha_chat_app.adapters;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +20,8 @@ import java.util.List;
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageViewHolder> {
     private List<Message> messages = new ArrayList<>();
     private List<Message> selectedMessages = new ArrayList<>();
+    private List<Message> filteredMessages = new ArrayList<>();
+    private boolean isSearchActive = false;
     private  String currentUserId ;
 //    private Context context;
 
@@ -33,6 +36,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     public void setMessages(List<Message> messages) {
         this.messages = messages != null ? messages : new ArrayList<>();
+        filteredMessages.clear();
+        filteredMessages.addAll(messages);
         notifyDataSetChanged();
     }
 
@@ -45,7 +50,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     @Override
     public void onBindViewHolder(@NonNull MessageViewHolder holder, int position) {
-        Message message = messages.get(position);
+        Message message = isSearchActive ? filteredMessages.get(position) : messages.get(position);
         holder.bind(message);
 
 
@@ -83,7 +88,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     @Override
     public int getItemCount() {
-        return messages.size();
+        return isSearchActive ? filteredMessages.size() : messages.size();
     }
 
     public List<Message> getSelectedMessages() {
@@ -96,6 +101,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     }
 
     public void updateMessage(List<Message> messagesToUpdate) {
+        Log.d("ChatActivity","message adapter"+ messagesToUpdate);
         for (Message updatedMessage : messagesToUpdate) {
             for (int i = 0; i < messages.size(); i++) {
                 Message currentMessage = messages.get(i);
@@ -110,6 +116,21 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         }
 
         // Notify the adapter that the data has changed
+        notifyDataSetChanged();
+    }
+
+    public void filterMessages(String query) {
+        if (query.isEmpty()) {
+            isSearchActive = false;
+        } else {
+            isSearchActive = true;
+            filteredMessages.clear();
+            for (Message message : messages) {
+                if (message.getContent() != null && message.getContent().toLowerCase().contains(query.toLowerCase())) {
+                    filteredMessages.add(message);
+                }
+            }
+        }
         notifyDataSetChanged();
     }
 

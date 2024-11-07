@@ -56,7 +56,9 @@ public class ChatActivity extends AppCompatActivity {
     private ListenerRegistration listenerRegistration;
 
     private List<Message> messages;
-    private List<Message> filteredMessges= new ArrayList<>();;
+    private List<Message> filteredMessges= new ArrayList<>();
+    private boolean isSearchActive = false;
+
     private RecyclerView recyclerView;
 
     private MessageDatabaseHelper dbHelper;
@@ -157,7 +159,7 @@ public class ChatActivity extends AppCompatActivity {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                filterMessages(newText);
+                messageAdapter.filterMessages(newText);
                 return false;
             }
         });
@@ -314,14 +316,19 @@ public class ChatActivity extends AppCompatActivity {
 
     // Method to update the RecyclerView and scroll to the latest message
     private void updateRecyclerView() {
+        List<Message> displayList = isSearchActive ? filteredMessges : messages;
 
-            // Sort messages by timestamp to ensure correct order
-            Collections.sort(messages, (m1, m2) -> Long.compare(m1.getTimestamp(), m2.getTimestamp()));
+        Log.d("ChatActivity","updated display msg list " + displayList.size());
+        Collections.sort(displayList, (m1, m2) -> Long.compare(m1.getTimestamp(), m2.getTimestamp()));
 
-            messageAdapter.notifyDataSetChanged();
-            recyclerView.scrollToPosition(messages.size() - 1);
 
+        messageAdapter.updateMessage(displayList);
+
+
+        messageAdapter.notifyDataSetChanged();
+        recyclerView.scrollToPosition(displayList.size() - 1);
     }
+
 
     @Override
     protected void onDestroy() {
@@ -470,22 +477,31 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void filterMessages(String query) {
-        filteredMessges.clear();
+
+        if (filteredMessges == null) {
+            filteredMessges = new ArrayList<>();
+        }
+        isSearchActive = !query.trim().isEmpty();
+        List<Message> tempFilteredMessages = new ArrayList<>();
         Log.d("ChatActivity", "typed text" + query);
 
+        if(!query.trim().isEmpty()){
             for (Message message : messages) {
                 String messageText = message.getContent();
 
 
                 if (messageText != null && messageText.toLowerCase().contains(query.toLowerCase())) {
                     if(messageText.equals(query)){
-                        filteredMessges.add(message);
+                        tempFilteredMessages.add(message);
                         Log.d("ChatActivity", "filtered messages " + message);
-                        updateRecyclerView();
+
                     }
                 }
             }
-
+        }
+        filteredMessges.clear();
+        filteredMessges.addAll(tempFilteredMessages);
+        updateRecyclerView();
 
     }
 }
