@@ -1,33 +1,66 @@
-<!-- res/layout/activity_register.xml -->
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:gravity="center_horizontal"
+    android:background="#f7f7f7">
+
+
+    <TextView
+        android:id="@+id/registerHereText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Register Here"
+        android:textSize="24sp"
+        android:textColor="#333"
+        android:textStyle="bold"
+        android:layout_marginBottom="32dp"
+        android:gravity="center" />
+
 
     <EditText
         android:id="@+id/nameInput"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Name" />
+        android:hint="Name"
+        android:textColor="#333"
+        android:textSize="16sp"
+        android:layout_marginBottom="16dp"
+        android:padding="10dp" />
+
 
     <EditText
         android:id="@+id/emailInput"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Email" />
+        android:hint="Email"
+        android:textColor="#333"
+        android:textSize="16sp"
+        android:layout_marginBottom="16dp"
+        android:padding="10dp" />
+
 
     <EditText
         android:id="@+id/passwordInput"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Password"
-        android:inputType="textPassword" />
+        android:inputType="textPassword"
+        android:textColor="#333"
+        android:textSize="16sp"
+        android:layout_marginBottom="32dp"
+        android:padding="10dp" />
+
 
     <Button
         android:id="@+id/registerButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Register" />
+        android:text="Register"
+        android:textColor="#ffffff"
+        android:background="#6200EE"
+        android:textSize="16sp" />
 
-</LinearLayout>
+    </LinearLayout>
