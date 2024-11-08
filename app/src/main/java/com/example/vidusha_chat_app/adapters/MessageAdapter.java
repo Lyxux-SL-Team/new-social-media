@@ -1,10 +1,14 @@
 package com.example.vidusha_chat_app.adapters;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -52,6 +56,21 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     public void onBindViewHolder(@NonNull MessageViewHolder holder, int position) {
         Message message = isSearchActive ? filteredMessages.get(position) : messages.get(position);
         holder.bind(message);
+
+        if (message.getIsImage()) {
+            // Decode the Base64 string to a bitmap and display it in an ImageView
+            byte[] decodedString = Base64.decode(message.getContent(), Base64.DEFAULT);
+            Bitmap decodedBitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+
+            holder.messageImage.setImageBitmap(decodedBitmap);
+            holder.messageImage.setVisibility(View.VISIBLE);
+            holder.messageText.setVisibility(View.GONE);
+        } else {
+            // Display text content if not an image
+            holder.messageText.setText(message.getContent());
+            holder.messageText.setVisibility(View.VISIBLE);
+            holder.messageImage.setVisibility(View.GONE);
+        }
 
 
         if (message.getChatId().equals(currentUserId)) {
@@ -136,15 +155,21 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     static class MessageViewHolder extends RecyclerView.ViewHolder {
         private TextView messageText;
+        private ImageView messageImage;
         CheckBox checkBoxSelect;
         public MessageViewHolder(@NonNull View itemView) {
             super(itemView);
             messageText = itemView.findViewById(R.id.message_text);
+            messageImage = itemView.findViewById(R.id.message_image);
             checkBoxSelect = itemView.findViewById(R.id.checkBox_select_message);
         }
 
         public void bind(Message message) {
-            messageText.setText(message.getContent());
+            if(message.getIsImage()){
+
+            }else {
+                messageText.setText(message.getContent());
+            }
         }
     }
 }

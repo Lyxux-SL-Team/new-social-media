@@ -1,5 +1,6 @@
 package com.example.vidusha_chat_app.utils;
 
+import android.graphics.Bitmap;
 import android.util.Base64;
 import android.util.Log;
 
@@ -17,6 +18,13 @@ public class ImageBase64Converter {
         byte[] fileContent = readFileToByteArray(file);
         Log.d("ChatActivity","uploaded img : 5" );
         return Base64.encodeToString(fileContent, Base64.DEFAULT);
+    }
+
+    public static String encodeBitmapToBase64(Bitmap bitmap) {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+        byte[] byteArray = byteArrayOutputStream.toByteArray();
+        return Base64.encodeToString(byteArray, Base64.DEFAULT);
     }
 
     private static byte[] readFileToByteArray(File file) throws IOException {

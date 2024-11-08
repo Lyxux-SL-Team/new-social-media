@@ -6,11 +6,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -38,6 +40,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -121,7 +124,7 @@ public class ChatActivity extends AppCompatActivity {
                 String messageContent = editTextText.getText().toString().trim();
                 if (!messageContent.isEmpty()) {
                     if(messageAdapter.getSelectedMessages().isEmpty()){
-                        sendMessage(messageContent);
+                        sendMessage(messageContent , false);
                     }else {
                         List<Message> selectedMessages = messageAdapter.getSelectedMessages();
                         updateMessages(selectedMessages);
@@ -172,23 +175,38 @@ public class ChatActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
-            Uri imageUri = data.getData();
-            Log.d("ChatActivity","uploaded img :" + imageUri);
-            String filePath = getFilePathFromUri(imageUri);
-            Log.d("ChatActivity","uploaded img :" + filePath);
-            try {
-                String imageCode = ImageBase64Converter.encodeImageToBase64(filePath);
-                Log.d("ChatActivity","uploaded img 3:" );
-                Log.d("ChatActivity","converted code " + imageCode);
-                sendMessage(imageCode);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-//            uploadImageToFirebase(imageUri);
 
+        if (requestCode == CAMERA_REQUEST && resultCode == RESULT_OK && data != null) {
+
+            Bitmap photo = (Bitmap) data.getExtras().get("data");
+
+            if (photo != null) {
+
+                String imageCode = ImageBase64Converter.encodeBitmapToBase64(photo);
+                Log.d("ChatActivity", "Captured image code: " + imageCode);
+                sendMessage(imageCode, true);
+            }
+        } else if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+
+            Uri imageUri = data.getData();
+            Log.d("ChatActivity", "Uploaded img URI: " + imageUri);
+            String filePath = getFilePathFromUri(imageUri);
+
+            if (filePath != null) {
+                try {
+
+                    String imageCode = ImageBase64Converter.encodeImageToBase64(filePath);
+                    Log.d("ChatActivity", "Converted image code: " + imageCode);
+                    sendMessage(imageCode, true);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    throw new RuntimeException(e);
+                }
+            }
         }
     }
+
+
     private String getFilePathFromUri(Uri uri) {
         try {
             // Create a temporary file to copy the content from the URI
@@ -212,15 +230,23 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
+    public static String encodeBitmapToBase64(Bitmap bitmap) {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+        byte[] byteArray = byteArrayOutputStream.toByteArray();
+        return Base64.encodeToString(byteArray, Base64.DEFAULT);
+    }
 
 
-    private void sendMessage(String content) {
+
+    private void sendMessage(String content, boolean isImage) {
         Message message = new Message();
         message.setSenderId(userId);
         message.setMessageId(userId+chatId+"_"+System.currentTimeMillis());
         message.setContent(content);
         message.setTimestamp(System.currentTimeMillis());
         message.setChatId(chatId);
+        message.setIsImage(isImage);
 
         if(isConnected()){
             // Save the message to Firestore

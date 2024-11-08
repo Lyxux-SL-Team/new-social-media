@@ -8,14 +8,17 @@ public class Message {
     private String chatId;
     private String type;
 
+    private boolean isImage;
+
     public Message() {};
 
-    public Message(String messageId, String senderId, String content, long timestamp, String chatId){
+    public Message(String messageId, String senderId, String content, long timestamp, String chatId, boolean isImage){
         this.messageId = messageId;
         this.senderId = senderId;
         this.content = content;
         this.timestamp = timestamp;
         this.chatId = chatId;
+        this.isImage = isImage;
     }
 
     public String getMessageId() {
@@ -56,5 +59,13 @@ public class Message {
 
     public void setChatId(String chatId) {
         this.chatId = chatId;
+    }
+
+    public boolean getIsImage() {
+        return isImage;
+    }
+
+    public void setIsImage(boolean isImage) {
+        this.isImage = isImage;
     }
 }
