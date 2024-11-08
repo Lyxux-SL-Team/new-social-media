@@ -31,14 +31,16 @@ import com.example.vidusha_chat_app.R;
 import com.example.vidusha_chat_app.adapters.MessageAdapter;
 import com.example.vidusha_chat_app.database.MessageDatabaseHelper;
 import com.example.vidusha_chat_app.models.Message;
+import com.example.vidusha_chat_app.utils.ImageBase64Converter;
 import com.google.firebase.database.annotations.Nullable;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -172,45 +174,41 @@ public class ChatActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
             Uri imageUri = data.getData();
+            Log.d("ChatActivity","uploaded img :" + imageUri);
+            String filePath = getFilePathFromUri(imageUri);
+            Log.d("ChatActivity","uploaded img :" + filePath);
+            try {
+                String imageCode = ImageBase64Converter.encodeImageToBase64(filePath);
+                Log.d("ChatActivity","uploaded img 3:" );
+                Log.d("ChatActivity","converted code " + imageCode);
+                sendMessage(imageCode);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
 //            uploadImageToFirebase(imageUri);
-            Log.d("ChatActivity","uploaded img" + imageUri);
+
         }
     }
+    private String getFilePathFromUri(Uri uri) {
+        try {
+            // Create a temporary file to copy the content from the URI
+            ContentResolver contentResolver = getContentResolver();
+            InputStream inputStream = contentResolver.openInputStream(uri);
 
-
-
-    private void uploadImageToFirebase(Uri imageUri) {
-        if (imageUri != null) {
-            String fileName = "images/" + System.currentTimeMillis() + ".jpg";
-            FirebaseStorage storage = FirebaseStorage.getInstance();
-            StorageReference storageRef = storage.getReference().child(fileName);
-
-            try {
-                // Open an InputStream from the Uri
-                ContentResolver contentResolver = getContentResolver();
-                InputStream inputStream = contentResolver.openInputStream(imageUri);
-
-                if (inputStream != null) {
-                    // Upload using putStream instead of putFile
-                    storageRef.putStream(inputStream)
-                            .addOnSuccessListener(taskSnapshot -> storageRef.getDownloadUrl()
-                                    .addOnSuccessListener(uri -> {
-                                        String imageUrl = uri.toString();
-                                        Log.d("ChatActivity", "Image uploaded successfully: " + imageUrl);
-                                        sendMessage(imageUrl);
-                                    }))
-                            .addOnFailureListener(e -> {
-                                Log.d("ChatActivity", "Error with upload img: " + e.getMessage());
-                                Toast.makeText(ChatActivity.this, "Failed to upload image: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                            });
+            File tempFile = File.createTempFile("temp_image", ".jpg", getCacheDir());
+            try (FileOutputStream outputStream = new FileOutputStream(tempFile)) {
+                byte[] buffer = new byte[1024];
+                int bytesRead;
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
                 }
-            } catch (Exception e) {
-                Log.e("ChatActivity", "Error opening InputStream: " + e.getMessage());
-                Toast.makeText(this, "Error uploading image", Toast.LENGTH_SHORT).show();
             }
-        } else {
-            Log.e("ChatActivity", "Image Uri is null");
-            Toast.makeText(this, "Image Uri is null", Toast.LENGTH_SHORT).show();
+            inputStream.close();
+
+            return tempFile.getAbsolutePath();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 
