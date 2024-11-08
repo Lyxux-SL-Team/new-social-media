@@ -47,7 +47,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
 
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, ChatActivity.class);
-            intent.putExtra("userId", user.getUserId());
+            intent.putExtra("selectedUserId", user.getUserId());
             context.startActivity(intent);
         });
     }

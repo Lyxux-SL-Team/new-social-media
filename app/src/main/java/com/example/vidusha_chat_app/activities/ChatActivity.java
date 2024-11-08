@@ -79,7 +79,7 @@ public class ChatActivity extends AppCompatActivity {
         setContentView(R.layout.activity_chat);
 
         firestore = FirebaseFirestore.getInstance();
-        userId = getIntent().getStringExtra("userId");
+        userId = getIntent().getStringExtra("selectedUserId");
 
         SharedPreferences sharedPreferences = getSharedPreferences("UserPrefs", MODE_PRIVATE);
         chatId = sharedPreferences.getString("userId", null);
@@ -280,14 +280,14 @@ public class ChatActivity extends AppCompatActivity {
         messages.addAll(offlineMessages);
 //        updateRecyclerView();
 
-        // Query for messages where chatId matches userId
+
         Query queryByChatId = firestore.collection("messages")
-                .whereEqualTo("chatId", userId)
+                .whereEqualTo("chatId", chatId)
                 .orderBy("timestamp");
 
-        // Query for messages where senderId matches userId
+
         Query queryBySenderId = firestore.collection("messages")
-                .whereEqualTo("senderId", userId)
+                .whereEqualTo("senderId", chatId)
                 .orderBy("timestamp");
 
         // Listener for chatId query
@@ -301,8 +301,10 @@ public class ChatActivity extends AppCompatActivity {
                 for (DocumentChange dc : snapshots.getDocumentChanges()) {
                     if (dc.getType() == DocumentChange.Type.ADDED) {
                         Message message = dc.getDocument().toObject(Message.class);
-                        if (!messages.contains(message)) {
-                            messages.add(message);
+                        if (message.getSenderId().equals(userId))  {
+                            if (!messages.contains(message)) {
+                                messages.add(message);
+                            }
                         }
                     }
                 }
@@ -321,9 +323,11 @@ public class ChatActivity extends AppCompatActivity {
                 for (DocumentChange dc : snapshots.getDocumentChanges()) {
                     if (dc.getType() == DocumentChange.Type.ADDED) {
                         Message message = dc.getDocument().toObject(Message.class);
+                    if(message.getSenderId().equals(chatId) && message.getChatId().equals(userId)){
                         if (!messages.contains(message)) {
                             messages.add(message);
                         }
+                    }
                     }
                 }
                 updateRecyclerView(); // Update the RecyclerView after adding Firestore messages
