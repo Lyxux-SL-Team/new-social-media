@@ -41,6 +41,10 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void loginUser(String email, String password) {
+        if(email.isEmpty() || password.isEmpty()){
+            Toast.makeText(LoginActivity.this, "Not allowed empty field", Toast.LENGTH_SHORT).show();
+            return;
+        }
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {

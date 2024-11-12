@@ -3,6 +3,7 @@ package com.example.vidusha_chat_app.activities;
 import static android.Manifest.permission.READ_CONTACTS;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
@@ -19,15 +20,15 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-
 import com.example.vidusha_chat_app.R;
 import com.example.vidusha_chat_app.adapters.UserAdapter;
 import com.example.vidusha_chat_app.models.User;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +39,7 @@ public class ChatListActivity extends AppCompatActivity {
     private UserAdapter userAdapter;
     private List<User> userList;
     private FirebaseFirestore firestore;
+    private FirebaseAuth mAuth;
 
     private static final int REQUEST_SELECT_CONTACT = 1;
     private static final int REQUEST_PERMISSIONS = 2;
@@ -55,6 +57,7 @@ public class ChatListActivity extends AppCompatActivity {
         recyclerView.setAdapter(userAdapter);
 
         // Initialize Firestore reference
+        mAuth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance();
         Log.d("ChatListActivity", "Firestore initialized.");
 
@@ -83,12 +86,27 @@ public class ChatListActivity extends AppCompatActivity {
                 });
 
         Button addButton = findViewById(R.id.button5);
+        Button logoutButton = findViewById(R.id.logout_button);
         addButton.setOnClickListener(view -> {
             if (ContextCompat.checkSelfPermission(this, READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this, new String[]{READ_CONTACTS}, REQUEST_PERMISSIONS);
             } else {
                 openContactPicker();
             }
+        });
+
+        logoutButton.setOnClickListener(view -> {
+            mAuth.signOut();
+
+            SharedPreferences sharedPreferences = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.clear();
+            editor.apply();
+
+            Intent intent = new Intent(ChatListActivity.this, LoginActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
         });
     }
 
