@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -15,6 +16,7 @@ import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -101,6 +103,26 @@ public class ChatActivity extends AppCompatActivity {
         deleteButton = findViewById(R.id.delete_button);
         editButton = findViewById(R.id.edit_button);
         searchTextView = findViewById(R.id.search_view);
+
+        // Assuming rootLayout is the ID of the root view in activity_chat.xml
+
+
+        recyclerView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                Rect r = new Rect();
+                recyclerView.getWindowVisibleDisplayFrame(r);
+                int screenHeight = recyclerView.getRootView().getHeight();
+                int keypadHeight = screenHeight - r.bottom;
+
+                if (keypadHeight > screenHeight * 0.15) { // Keyboard is opened
+                    recyclerView.scrollTo(0, editTextText.getBottom());
+                } else {
+                    recyclerView.scrollTo(0, 0); // Keyboard is closed
+                }
+            }
+        });
+
 
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));

@@ -37,6 +37,7 @@
             android:exported="false"/>
         <activity
             android:name=".activities.ChatActivity"
+            android:windowSoftInputMode="adjustPan"
             android:exported="false"/>
         <activity
             android:name=".activities.LoginActivity"
