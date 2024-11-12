@@ -413,6 +413,7 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void deleteMessages(List<Message> selectedMessages) {
+        messageAdapter.removeMessages(selectedMessages);
         for (Message message : selectedMessages) {
             String messageId = message.getMessageId();
             Log.d("chatActivity", "Attempting to delete message with ID: " + messageId);
@@ -423,7 +424,7 @@ public class ChatActivity extends AppCompatActivity {
                         .document(messageId)
                         .delete()
                         .addOnSuccessListener(aVoid -> {
-                            messageAdapter.removeMessages(selectedMessages);
+
                             Toast.makeText(this, "Messages deleted", Toast.LENGTH_SHORT).show();
                         })
                         .addOnFailureListener(e -> {

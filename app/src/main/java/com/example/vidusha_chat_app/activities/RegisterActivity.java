@@ -54,7 +54,7 @@ public class RegisterActivity extends AppCompatActivity {
                         FirebaseUser firebaseUser = mAuth.getCurrentUser();
                         if (firebaseUser != null) {
                             String userId = firebaseUser.getUid();
-                            String profilePicUrl = ""; // Set a default or placeholder URL
+                            String profilePicUrl = "";
                             String status = "Hey, I'm using Vidusha Chat App!";
 
                             // Create a User object with additional details
@@ -65,7 +65,7 @@ public class RegisterActivity extends AppCompatActivity {
                                     .set(user)
                                     .addOnSuccessListener(aVoid -> {
                                         Toast.makeText(RegisterActivity.this, "Registration Successful", Toast.LENGTH_SHORT).show();
-                                        startActivity(new Intent(RegisterActivity.this, ChatListActivity.class));
+                                        startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
                                         finish();
                                     })
                                     .addOnFailureListener(e ->
