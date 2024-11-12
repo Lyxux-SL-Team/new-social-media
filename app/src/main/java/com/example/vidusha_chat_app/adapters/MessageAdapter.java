@@ -128,10 +128,12 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                 // Check if the message ID matches
                 if (currentMessage.getMessageId().equals(updatedMessage.getMessageId())) {
                     // Update the message content or any other fields
-                    messages.set(i, updatedMessage); // Replace old message with updated one
+                    messages.set(i, updatedMessage);
+
                     break; // Move to the next updated message
                 }
             }
+            notifyDataSetChanged();
         }
 
         // Notify the adapter that the data has changed

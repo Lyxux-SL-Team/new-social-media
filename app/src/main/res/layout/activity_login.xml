@@ -49,7 +49,7 @@
         android:layout_height="wrap_content"
         android:text="Login"
         android:textColor="#ffffff"
-        android:background="#6200EE"
+        android:background="@drawable/button_background"
         android:textSize="16sp"
         android:layout_marginBottom="16dp" />
 
@@ -60,7 +60,7 @@
         android:layout_height="wrap_content"
         android:text="Register"
         android:textColor="#ffffff"
-        android:background="#03DAC5"
+        android:background="@drawable/button_background"
         android:textSize="16sp" />
 
     </LinearLayout>
