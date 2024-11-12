@@ -38,10 +38,12 @@ public class ChatListActivity extends AppCompatActivity {
     private UserAdapter userAdapter;
     private List<User> userList;
     private FirebaseFirestore firestore;
-
+    private String logedUserId;
 
     private static final int REQUEST_SELECT_CONTACT = 1;
     private static final int REQUEST_PERMISSIONS = 2;
+
+    private SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +56,14 @@ public class ChatListActivity extends AppCompatActivity {
         userList = new ArrayList<>();
         userAdapter = new UserAdapter(this, userList);
         recyclerView.setAdapter(userAdapter);
+
+         sharedPreferences = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        logedUserId = sharedPreferences.getString("userId", null);
+        if (logedUserId != null) {
+            Log.d("ChatActivity", "Logged-in User ID: " + logedUserId);
+        } else {
+            Log.d("ChatActivity", "User ID not found.");
+        }
 
         // Initialize Firestore reference
 
@@ -74,7 +84,10 @@ public class ChatListActivity extends AppCompatActivity {
                             userList.clear(); // Clear previous data to avoid duplicates
                             for (QueryDocumentSnapshot document : value) {
                                 User user = document.toObject(User.class);
-                                userList.add(user);
+                                if(!user.getUserId().equals(logedUserId)){
+                                    userList.add(user);
+                                }
+
                                 Log.d("ChatListActivity", "User added: " + user.getName());
                             }
                             userAdapter.notifyDataSetChanged();
@@ -96,7 +109,7 @@ public class ChatListActivity extends AppCompatActivity {
 
         logoutButton.setOnClickListener(view -> {
 
-            SharedPreferences sharedPreferences = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+            sharedPreferences = getSharedPreferences("UserPrefs", MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.clear();
             editor.apply();
