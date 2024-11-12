@@ -57,6 +57,17 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         Message message = isSearchActive ? filteredMessages.get(position) : messages.get(position);
         holder.bind(message);
 
+        holder.itemView.setOnLongClickListener(v -> {
+            // Enable selection mode when long pressed
+            if (!selectedMessages.contains(message)) {
+                selectedMessages.add(message); // Add message to selection
+                notifyDataSetChanged(); // Update the view
+                chatActivity.updateDeleteButtonVisibility();
+                chatActivity.updateEditButtonVisibility();
+            }
+            return true; // Indicate that the long click was handled
+        });
+
         if (message.getIsImage()) {
             // Decode the Base64 string to a bitmap and display it in an ImageView
             byte[] decodedString = Base64.decode(message.getContent(), Base64.DEFAULT);
@@ -89,7 +100,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
             holder.messageText.setGravity(View.TEXT_ALIGNMENT_TEXT_START);
         }
 
-        holder.checkBoxSelect.setVisibility(View.VISIBLE);
+        holder.checkBoxSelect.setVisibility(selectedMessages.contains(message) ? View.VISIBLE : View.GONE);
 
         holder.checkBoxSelect.setChecked(selectedMessages.contains(message));
 
@@ -158,7 +169,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     static class MessageViewHolder extends RecyclerView.ViewHolder {
         private TextView messageText;
         private ImageView messageImage;
-        CheckBox checkBoxSelect;
+        private CheckBox checkBoxSelect;
+
         public MessageViewHolder(@NonNull View itemView) {
             super(itemView);
             messageText = itemView.findViewById(R.id.message_text);
@@ -167,11 +179,26 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         }
 
         public void bind(Message message) {
-            if(message.getIsImage()){
+            if (message.getIsImage()) {
+                // If the message is an image, hide the text view and show the image
+                messageText.setVisibility(View.GONE);
+                messageImage.setVisibility(View.VISIBLE);
 
-            }else {
+                // Decode Base64 string to Bitmap and display in ImageView
+                byte[] decodedString = Base64.decode(message.getContent(), Base64.DEFAULT);
+                Bitmap decodedBitmap = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                messageImage.setImageBitmap(decodedBitmap);
+            } else {
+                // If the message is text, show the text view and hide the image view
+                messageText.setVisibility(View.VISIBLE);
+                messageImage.setVisibility(View.GONE);
                 messageText.setText(message.getContent());
             }
         }
+
+        public void setCheckboxVisibility(boolean isVisible) {
+            checkBoxSelect.setVisibility(isVisible ? View.VISIBLE : View.GONE);
+        }
     }
+
 }
