@@ -323,7 +323,7 @@ public class ChatActivity extends AppCompatActivity {
                 for (DocumentChange dc : snapshots.getDocumentChanges()) {
                     if (dc.getType() == DocumentChange.Type.ADDED) {
                         Message message = dc.getDocument().toObject(Message.class);
-                    if(message.getSenderId().equals(chatId) && message.getChatId().equals(userId)){
+                    if(message.getChatId().equals(userId)){
                         if (!messages.contains(message)) {
                             messages.add(message);
                         }

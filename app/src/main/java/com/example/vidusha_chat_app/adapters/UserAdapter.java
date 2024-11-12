@@ -22,6 +22,8 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
     private Context context;
     private List<User> userList;
 
+    private ChatActivity chatActivity;
+
     public UserAdapter(Context context, List<User> userList) {
         this.context = context;
         this.userList = userList;
@@ -49,6 +51,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
             Intent intent = new Intent(context, ChatActivity.class);
             intent.putExtra("selectedUserId", user.getUserId());
             context.startActivity(intent);
+
         });
     }
 

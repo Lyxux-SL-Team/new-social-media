@@ -23,7 +23,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.vidusha_chat_app.R;
 import com.example.vidusha_chat_app.adapters.UserAdapter;
 import com.example.vidusha_chat_app.models.User;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
@@ -39,7 +38,7 @@ public class ChatListActivity extends AppCompatActivity {
     private UserAdapter userAdapter;
     private List<User> userList;
     private FirebaseFirestore firestore;
-    private FirebaseAuth mAuth;
+
 
     private static final int REQUEST_SELECT_CONTACT = 1;
     private static final int REQUEST_PERMISSIONS = 2;
@@ -57,7 +56,7 @@ public class ChatListActivity extends AppCompatActivity {
         recyclerView.setAdapter(userAdapter);
 
         // Initialize Firestore reference
-        mAuth = FirebaseAuth.getInstance();
+
         firestore = FirebaseFirestore.getInstance();
         Log.d("ChatListActivity", "Firestore initialized.");
 
@@ -96,7 +95,6 @@ public class ChatListActivity extends AppCompatActivity {
         });
 
         logoutButton.setOnClickListener(view -> {
-            mAuth.signOut();
 
             SharedPreferences sharedPreferences = getSharedPreferences("UserPrefs", MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPreferences.edit();
