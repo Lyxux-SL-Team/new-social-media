@@ -21,6 +21,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.SearchView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -58,6 +59,7 @@ public class ChatActivity extends AppCompatActivity {
     private static final int CAMERA_REQUEST = 123;
     private FirebaseFirestore firestore;
     private String userId;
+    private String userName;
     private String chatId;
     private MessageAdapter messageAdapter;
     private ListenerRegistration listenerRegistration;
@@ -82,6 +84,7 @@ public class ChatActivity extends AppCompatActivity {
 
         firestore = FirebaseFirestore.getInstance();
         userId = getIntent().getStringExtra("selectedUserId");
+        userName = getIntent().getStringExtra("selectedUserName");
 
         SharedPreferences sharedPreferences = getSharedPreferences("UserPrefs", MODE_PRIVATE);
         chatId = sharedPreferences.getString("userId", null);
@@ -103,6 +106,8 @@ public class ChatActivity extends AppCompatActivity {
         deleteButton = findViewById(R.id.delete_button);
         editButton = findViewById(R.id.edit_button);
         searchTextView = findViewById(R.id.search_view);
+        TextView nameTextView = findViewById(R.id.name_textView);
+        nameTextView.setText(userName);
 
         // Assuming rootLayout is the ID of the root view in activity_chat.xml
 

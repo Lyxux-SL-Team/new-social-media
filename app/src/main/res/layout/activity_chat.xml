@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true">
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<androidx.constraintlayout.widget.ConstraintLayout
     android:id="@+id/search_view2"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -25,16 +25,17 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <!-- Search View -->
+
+    <!-- RecyclerView for posts/messages -->
     <SearchView
         android:id="@+id/search_view"
         android:layout_width="match_parent"
         android:layout_height="52dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="36dp"
         android:layout_marginEnd="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/toolbar" />
 
-    <!-- RecyclerView for posts/messages -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/posts_recycler_view"
         android:layout_width="0dp"
@@ -115,6 +116,19 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.938"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/name_textView"
+        android:layout_width="349dp"
+        android:layout_height="32dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="4dp"
+        android:text="TextView"
+        android:textSize="25sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

@@ -4,11 +4,13 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Base64;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -87,17 +89,21 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         if (message.getChatId().equals(currentUserId)) {
 
             ViewGroup.LayoutParams layoutParams = holder.itemView.getLayoutParams();
-            layoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT;
+//            layoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT;
             holder.itemView.setLayoutParams(layoutParams);
             holder.messageText.setBackgroundColor(holder.itemView.getContext().getResources().getColor(R.color.blue));
-            holder.messageText.setGravity(View.TEXT_ALIGNMENT_TEXT_END);
+            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) holder.messageText.getLayoutParams();
+            params.gravity = Gravity.END;
+            holder.messageText.setLayoutParams(params);
         } else {
 
             ViewGroup.LayoutParams layoutParams = holder.itemView.getLayoutParams();
-            layoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT;
+//            layoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT;
             holder.itemView.setLayoutParams(layoutParams);
             holder.messageText.setBackgroundColor(holder.itemView.getContext().getResources().getColor(R.color.red));
-            holder.messageText.setGravity(View.TEXT_ALIGNMENT_TEXT_START);
+            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) holder.messageText.getLayoutParams();
+            params.gravity = Gravity.START;
+            holder.messageText.setLayoutParams(params);
         }
 
         holder.checkBoxSelect.setVisibility(selectedMessages.contains(message) ? View.VISIBLE : View.GONE);
