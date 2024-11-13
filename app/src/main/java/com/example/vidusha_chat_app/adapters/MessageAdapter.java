@@ -89,21 +89,21 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         if (message.getChatId().equals(currentUserId)) {
 
             ViewGroup.LayoutParams layoutParams = holder.itemView.getLayoutParams();
-//            layoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT;
+            layoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT;
             holder.itemView.setLayoutParams(layoutParams);
             holder.messageText.setBackgroundColor(holder.itemView.getContext().getResources().getColor(R.color.blue));
             LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) holder.messageText.getLayoutParams();
             params.gravity = Gravity.END;
-            holder.messageText.setLayoutParams(params);
+            holder.itemView.setLayoutParams(params);
         } else {
 
             ViewGroup.LayoutParams layoutParams = holder.itemView.getLayoutParams();
-//            layoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT;
+            layoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT;
             holder.itemView.setLayoutParams(layoutParams);
             holder.messageText.setBackgroundColor(holder.itemView.getContext().getResources().getColor(R.color.red));
             LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) holder.messageText.getLayoutParams();
             params.gravity = Gravity.START;
-            holder.messageText.setLayoutParams(params);
+            holder.itemView.setLayoutParams(params);
         }
 
         holder.checkBoxSelect.setVisibility(selectedMessages.contains(message) ? View.VISIBLE : View.GONE);
